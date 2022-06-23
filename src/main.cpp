@@ -1,6 +1,6 @@
-#include "../include/user-interaction.h"
-#include "../include/figure.h"
-#include "../include/board.h"
+#include "user-interaction.h"
+#include "figure.h"
+#include "board.h"
 
 #include <iostream>
 
