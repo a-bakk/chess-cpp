@@ -4,6 +4,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(chess VERSION 1.0)
 
-file(GLOB_RECURSE SRC_FILES src/*.cpp)
+file(GLOB_RECURSE SRC_FILES src/*.cpp) #[[ far from good practice ]]
 add_executable(chess ${SRC_FILES})
 target_include_directories(chess PUBLIC $(CMAKE_CURRENT_SOURCE_DIR)/include)
