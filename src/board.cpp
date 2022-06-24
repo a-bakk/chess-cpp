@@ -4,13 +4,11 @@
 #include <vector>
 #include <sstream>
 #include <string>
+#include "figure.h"
 
-//std::vector<std::vector<field>> field::board;
 field board[BOARD_SIZE][BOARD_SIZE];
 
 field::field(const std::string& content, bool occupied) : content(content), occupied(occupied) {}
-
-field::~field() { if (this->field_figure != nullptr) delete field_figure; }
 
 const std::string& field::get_content() const { return content; }
 
@@ -18,17 +16,13 @@ bool field::is_occupied() const { return occupied; }
 
 const figure* field::get_field_figure() const { return this->field_figure; }
 
-/*const std::vector<std::vector<field>>& field::get_board() {
-    return field::board;
-}*/
-
 void field::set_content(const std::string& content) { this->content = content; }
 
 void field::set_occupied(bool occupied) { this->occupied = occupied; }
 
 void field::set_field_figure(figure *field_figure) { this->field_figure = field_figure; }
 
-void field::board_init() {  // seg fault
+void field::board_init() {
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
             figure *tmp_f; bool set = false;
@@ -37,49 +31,50 @@ void field::board_init() {  // seg fault
                     switch (j) {
                         case 0:
                         case 7: {
-                            rook tmp {false}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new rook {false}; set = true; break;
                         }
                         case 1:
                         case 6: {
-                            knight tmp {false}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new knight {false}; set = true; break;
                         }
                         case 2:
                         case 5: {
-                            bishop tmp {false}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new bishop {false}; set = true; break;
                         }
                         case 3: {
-                            queen tmp {false}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new queen {false}; set = true; break;
                         }
                         case 4: {
-                            king tmp {false}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new king {false}; set = true; break;
                         }
                     }
+                    break;
                 }
                 case 1: {
-                    pawn tmp {false}; tmp_f = &tmp; set = true; break;
+                    tmp_f = new pawn {false}; set = true; break;
                 }
                 case 6: {
-                    pawn tmp {true}; tmp_f = &tmp; set = true; break;
+                    tmp_f = new pawn {true}; set = true; break;
                 }
                 case 7: {
                     switch (j) {
                         case 0:
                         case 7: {
-                            rook tmp {true}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new rook {true}; set = true; break;
                         }
                         case 1:
                         case 6: {
-                            knight tmp {true}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new knight {true}; set = true; break;
                         }
                         case 2:
                         case 5: {
-                            bishop tmp {true}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new bishop {true}; set = true; break;
                         }
                         case 3: {
-                            queen tmp {true}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new queen {true}; set = true; break;
                         }
                         case 4: {
-                            king tmp {true}; tmp_f = &tmp; set = true; break;
+                            tmp_f = new king {true}; set = true; break;
                         }
                     }
                 }
@@ -107,12 +102,34 @@ void field::board_print() {
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE + 1; j++) {
             if (j == 0) {
-                std::cout << " " << row_i << " "; row_i--;
+                std::cout << " " << row_i << " ";
             }
             else {
                 std::cout << board[i][j - 1].get_content();
             }
+            if (j == 8) {
+                std::cout << " " << row_i << " "; row_i--;
+            }
         }
         std::cout << std::endl;
     }
+    std::cout << "   ";
+    for (int i = 'A'; i < 'A' + BOARD_SIZE; i++) {
+        std::cout << " " << (char) i << " ";
+    }
+    std::cout << std::endl;
+}
+
+bool pawn::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
+    if (owner) {
+        if (to_r >= from_r) return false;
+        if (!board[to_r][to_c].is_occupied() && from_c == to_c && to_r == (from_r - 1)) return true;
+        if (board[to_r][to_c].is_occupied() && to_r == (from_r - 1) && (to_c == (from_c - 1) || to_c == (from_c + 1))) return true;
+    }
+    else {
+        if (to_r <= from_r) return false;
+        if (!board[to_r][to_c].is_occupied() && from_c == to_c && to_r == (from_r + 1)) return true;
+        if (board[to_r][to_c].is_occupied() && to_r == (from_r + 1) && (to_c == (from_c - 1) || to_c == (from_c + 1))) return true;
+    }
+    return false;
 }

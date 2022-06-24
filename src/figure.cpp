@@ -51,17 +51,3 @@ bool knight::validate_move(int from_r, int from_c, int to_r, int to_c, bool owne
     return (((to_r == (from_r - 2) || to_r == (from_r + 2)) && (to_c == (from_c - 1) || to_c == (from_c + 1))) ||
     ((to_c == (from_c - 2) || to_c == (from_c + 2)) && (to_r == (from_r + 1) || to_r == (from_r - 1))));
 }
-
-bool pawn::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
-    /*if (owner) {
-        if (to_r >= from_r) return false;
-        if (!field::get_board()[to_r][to_c].is_occupied() && from_c == to_c && to_r == (from_r - 1)) return true;
-        if (field::get_board()[to_r][to_c].is_occupied() && to_r == (from_r - 1) && (to_c == (from_c - 1) || to_c == (from_c + 1))) return true;
-    }
-    else {
-        if (to_r <= from_r) return false;
-        if (!field::get_board()[to_r][to_c].is_occupied() && from_c == to_c && to_r == (from_r + 1)) return true;
-        if (field::get_board()[to_r][to_c].is_occupied() && to_r == (from_r + 1) && (to_c == (from_c - 1) || to_c == (from_c + 1))) return true;
-    }*/
-    return false;
-}
