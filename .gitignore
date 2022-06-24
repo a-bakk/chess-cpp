@@ -1,3 +1,4 @@
 .vscode
 make.sh
 build
+memcheck.sh

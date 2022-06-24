@@ -1,10 +1,5 @@
 #include "board.h"
 
-#include <iostream>
-#include <vector>
-#include <sstream>
-#include <string>
-
 field board[BOARD_SIZE][BOARD_SIZE];
 
 field::field(const std::string& content, bool occupied) : content(content), occupied(occupied) {}
@@ -12,6 +7,8 @@ field::field(const std::string& content, bool occupied) : content(content), occu
 figure::figure(char symbol, bool owner) : symbol(symbol), owner(owner) {}
 
 figure::~figure() {}
+
+field::~field() { if (field_figure != nullptr) free(field_figure); field_figure = nullptr; }
 
 char figure::get_symbol() const { return symbol; }
 
@@ -37,7 +34,7 @@ const std::string& field::get_content() const { return content; }
 
 bool field::is_occupied() const { return occupied; }
 
-const figure* field::get_field_figure() const { return this->field_figure; }
+figure* field::get_field_figure() const { return this->field_figure; }
 
 void field::set_content(const std::string& content) { this->content = content; }
 
@@ -48,7 +45,7 @@ void field::set_field_figure(figure *field_figure) { this->field_figure = field_
 void field::board_init() {
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
-            figure *tmp_f; bool set = false;
+            figure *tmp_f = nullptr; bool set = false;
             switch (i) {
                 case 0: {
                     switch (j) {
@@ -109,7 +106,6 @@ void field::board_init() {
                 board[i][j].set_content(sstmp.str());
                 board[i][j].set_field_figure(tmp_f);
                 board[i][j].set_occupied(true);
-                delete tmp_f;
             }
         }
     }
@@ -143,43 +139,53 @@ void field::board_print() {
     std::cout << std::endl;
 }
 
-bool king::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
-    for (int i = from_r - 1; i <= from_r + 1; i++) {
-        for (int j = from_c - 1; j <= from_c + 1; j++) {
-            if (to_r == i && to_c == j) return true;
+bool figure::move(const move_coord& c) {
+    if (!board[c.from_r][c.from_c].is_occupied()) return false;
+    if (!(board[c.from_r][c.from_c].field_figure->validate_move(c, board[c.from_r][c.from_c].field_figure->get_owner()))) return false;
+    board[c.to_r][c.to_c].set_content(board[c.from_r][c.from_c].get_content()); board[c.to_r][c.to_c].set_occupied(true); board[c.to_r][c.to_c].set_field_figure(board[c.from_r][c.from_c].get_field_figure());
+    board[c.from_r][c.from_c].set_occupied(false); board[c.from_r][c.from_c].set_content(EMPTY_FIELD);
+    return true;
+}
+
+bool king::validate_move(const move_coord& c, bool owner) {
+    for (unsigned i = c.from_r - 1; i <= c.from_r + 1; i++) {
+        for (unsigned j = c.from_c - 1; j <= c.from_c + 1; j++) {
+            if (c.to_r == i && c.to_c == j) return true;
         }
     }
     return false;
 }
 
-bool queen::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
+bool queen::validate_move(const move_coord& c, bool owner) {
     king k(true); bishop b(true); // now this is ugly
-    return k.validate_move(from_r, from_c, to_r, to_c, owner) || b.validate_move(from_r, from_c, to_r, to_c, owner);
+    return k.validate_move(c, owner) || b.validate_move(c, owner);
 }
 
-bool rook::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
-    return ((from_r == to_r) || (from_c == to_c));
+bool rook::validate_move(const move_coord& c, bool owner) {
+    return ((c.from_r == c.to_r) || (c.from_c == c.to_c));
 }
 
-bool bishop::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
-    return (((from_r + from_c) == (to_r + to_c)) || ((from_c - from_r) == (to_c - to_r)));
+bool bishop::validate_move(const move_coord& c, bool owner) {
+    return (((c.from_r + c.from_c) == (c.to_r + c.to_c)) || ((c.from_c - c.from_r) == (c.to_c - c.to_r)));
 }
 
-bool knight::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
-    return (((to_r == (from_r - 2) || to_r == (from_r + 2)) && (to_c == (from_c - 1) || to_c == (from_c + 1))) ||
-    ((to_c == (from_c - 2) || to_c == (from_c + 2)) && (to_r == (from_r + 1) || to_r == (from_r - 1))));
+bool knight::validate_move(const move_coord& c, bool owner) {
+    return (((c.to_r == (c.from_r - 2) || c.to_r == (c.from_r + 2)) && (c.to_c == (c.from_c - 1) || c.to_c == (c.from_c + 1))) ||
+    ((c.to_c == (c.from_c - 2) || c.to_c == (c.from_c + 2)) && (c.to_r == (c.from_r + 1) || c.to_r == (c.from_r - 1))));
 }
 
-bool pawn::validate_move(int from_r, int from_c, int to_r, int to_c, bool owner) {
+bool pawn::validate_move(const move_coord& c, bool owner) {
     if (owner) {
-        if (to_r >= from_r) return false;
-        if (!board[to_r][to_c].is_occupied() && from_c == to_c && to_r == (from_r - 1)) return true;
-        if (board[to_r][to_c].is_occupied() && to_r == (from_r - 1) && (to_c == (from_c - 1) || to_c == (from_c + 1))) return true;
+        if (c.to_r >= c.from_r) return false;
+        if (!board[c.to_r][c.to_c].is_occupied() && !board[c.to_r - 1][c.to_c].is_occupied() && c.from_r == 6 && c.to_c == c.from_c && c.to_r == (c.from_r - 2)) return true;
+        if (!board[c.to_r][c.to_c].is_occupied() && c.from_c == c.to_c && c.to_r == (c.from_r - 1)) return true;
+        if (board[c.to_r][c.to_c].is_occupied() && c.to_r == (c.from_r - 1) && (c.to_c == (c.from_c - 1) || c.to_c == (c.from_c + 1))) return true;
     }
     else {
-        if (to_r <= from_r) return false;
-        if (!board[to_r][to_c].is_occupied() && from_c == to_c && to_r == (from_r + 1)) return true;
-        if (board[to_r][to_c].is_occupied() && to_r == (from_r + 1) && (to_c == (from_c - 1) || to_c == (from_c + 1))) return true;
+        if (c.to_r <= c.from_r) return false;
+        if (!board[c.to_r][c.to_c].is_occupied() && !board[c.to_r + 1][c.to_c].is_occupied() && c.from_r == 1 && c.to_c == c.from_c && c.to_r == (c.from_r + 2)) return true;
+        if (!board[c.to_r][c.to_c].is_occupied() && c.from_c == c.to_c && c.to_r == (c.from_r + 1)) return true;
+        if (board[c.to_r][c.to_c].is_occupied() && c.to_r == (c.from_r + 1) && (c.to_c == (c.from_c - 1) || c.to_c == (c.from_c + 1))) return true;
     }
     return false;
 }
