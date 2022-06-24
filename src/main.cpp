@@ -6,6 +6,9 @@
 
 int main(int argc, char **argv) {
 
+    //field::board_init();
+    field::board_print();
+
     return 0;
 
 }

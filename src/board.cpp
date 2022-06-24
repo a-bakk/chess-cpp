@@ -2,8 +2,11 @@
 
 #include <iostream>
 #include <vector>
+#include <sstream>
+#include <string>
 
-std::vector<std::vector<field>> field::board;
+//std::vector<std::vector<field>> field::board;
+field board[BOARD_SIZE][BOARD_SIZE];
 
 field::field(const std::string& content, bool occupied) : content(content), occupied(occupied) {}
 
@@ -11,13 +14,13 @@ field::~field() { if (this->field_figure != nullptr) delete field_figure; }
 
 const std::string& field::get_content() const { return content; }
 
-bool field::get_occupied() const { return occupied; }
+bool field::is_occupied() const { return occupied; }
 
 const figure* field::get_field_figure() const { return this->field_figure; }
 
-const std::vector<std::vector<field>>& field::get_board() {
+/*const std::vector<std::vector<field>>& field::get_board() {
     return field::board;
-}
+}*/
 
 void field::set_content(const std::string& content) { this->content = content; }
 
@@ -25,10 +28,91 @@ void field::set_occupied(bool occupied) { this->occupied = occupied; }
 
 void field::set_field_figure(figure *field_figure) { this->field_figure = field_figure; }
 
-void field::board_init() { // missing actual figures
+void field::board_init() {  // seg fault
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
-            board[i][j].set_content(EMPTY_FIELD);
+            figure *tmp_f; bool set = false;
+            switch (i) {
+                case 0: {
+                    switch (j) {
+                        case 0:
+                        case 7: {
+                            rook tmp {false}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 1:
+                        case 6: {
+                            knight tmp {false}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 2:
+                        case 5: {
+                            bishop tmp {false}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 3: {
+                            queen tmp {false}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 4: {
+                            king tmp {false}; tmp_f = &tmp; set = true; break;
+                        }
+                    }
+                }
+                case 1: {
+                    pawn tmp {false}; tmp_f = &tmp; set = true; break;
+                }
+                case 6: {
+                    pawn tmp {true}; tmp_f = &tmp; set = true; break;
+                }
+                case 7: {
+                    switch (j) {
+                        case 0:
+                        case 7: {
+                            rook tmp {true}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 1:
+                        case 6: {
+                            knight tmp {true}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 2:
+                        case 5: {
+                            bishop tmp {true}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 3: {
+                            queen tmp {true}; tmp_f = &tmp; set = true; break;
+                        }
+                        case 4: {
+                            king tmp {true}; tmp_f = &tmp; set = true; break;
+                        }
+                    }
+                }
+                default: board[i][j].set_content(EMPTY_FIELD);
+            }
+            if (set) {
+                std::stringstream sstmp;
+                sstmp << FIELD_PREFIX << tmp_f->get_symbol() << FIELD_POSTFIX;
+                board[i][j].set_content(sstmp.str());
+                board[i][j].set_field_figure(tmp_f);
+                board[i][j].set_occupied(true);
+                delete tmp_f;
+            }
         }
+    }
+}
+
+void field::board_print() {
+    std::cout << "   ";
+    for (int i = 'A'; i < 'A' + BOARD_SIZE; i++) {
+        std::cout << " " << (char) i << " ";
+    }
+    std::cout << std::endl;
+    int row_i = 8;
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE + 1; j++) {
+            if (j == 0) {
+                std::cout << " " << row_i << " "; row_i--;
+            }
+            else {
+                std::cout << board[i][j - 1].get_content();
+            }
+        }
+        std::cout << std::endl;
     }
 }
