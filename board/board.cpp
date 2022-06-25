@@ -143,7 +143,7 @@ bool figure::move(const move_coord& c) {
     if (!board[c.from_r][c.from_c].is_occupied()) return false;
     if (!(board[c.from_r][c.from_c].field_figure->validate_move(c, board[c.from_r][c.from_c].field_figure->get_owner()))) return false;
     board[c.to_r][c.to_c].set_content(board[c.from_r][c.from_c].get_content()); board[c.to_r][c.to_c].set_occupied(true); board[c.to_r][c.to_c].set_field_figure(board[c.from_r][c.from_c].get_field_figure());
-    board[c.from_r][c.from_c].set_occupied(false); board[c.from_r][c.from_c].set_content(EMPTY_FIELD);
+    board[c.from_r][c.from_c].set_occupied(false); board[c.from_r][c.from_c].set_content(EMPTY_FIELD); board[c.from_r][c.from_c].field_figure = nullptr;
     return true;
 }
 
