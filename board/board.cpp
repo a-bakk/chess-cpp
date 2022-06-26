@@ -112,6 +112,7 @@ void field::board_init() {
 }
 
 void field::board_print() {
+    std::cout << "\t     DARK" << std::endl;
     std::cout << "   ";
     for (int i = 'A'; i < 'A' + BOARD_SIZE; i++) {
         std::cout << " " << (char) i << " ";
@@ -137,9 +138,24 @@ void field::board_print() {
         std::cout << " " << (char) i << " ";
     }
     std::cout << std::endl;
+    std::cout << "\t     LIGHT" << std::endl;
 }
 
-bool figure::move(const move_coord& c) {
+bool field::win_condition() {
+    bool light_k, dark_k;
+    for (unsigned i = 0; i < BOARD_SIZE; i++) {
+        for (unsigned j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j].content[1] == 'k') dark_k = true;
+            if (board[i][j].content[1] == 'K') light_k = true;
+        }
+    }
+    if (!light_k) { std::cout << "Dark wins..." << std::endl; return true; }
+    if (!dark_k) { std::cout << "Light wins..." << std::endl; return true; }
+    return false;
+}
+
+bool figure::move(const move_coord& c, bool owner) {
+    if (board[c.from_r][c.from_c].field_figure->get_owner() != owner) return false;
     if (!board[c.from_r][c.from_c].is_occupied()) return false;
     if (!(board[c.from_r][c.from_c].field_figure->validate_move(c, board[c.from_r][c.from_c].field_figure->get_owner()))) return false;
     board[c.to_r][c.to_c].set_content(board[c.from_r][c.from_c].get_content()); board[c.to_r][c.to_c].set_occupied(true); board[c.to_r][c.to_c].set_field_figure(board[c.from_r][c.from_c].get_field_figure());

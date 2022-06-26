@@ -28,7 +28,7 @@ public:
     bool get_owner() const;
     void set_symbol(char symbol);
     void set_owner(bool owner);
-    static bool move(const move_coord& c);
+    static bool move(const move_coord& c, bool owner);
     virtual bool validate_move(const move_coord& c, bool owner) = 0;
 };
 
@@ -47,7 +47,8 @@ public:
     void set_field_figure(figure *field_figure);
     static void board_init();
     static void board_print();
-    friend bool figure::move(const move_coord& c);
+    static bool win_condition();
+    friend bool figure::move(const move_coord& c, bool owner);
 };
 
 class king : public figure {

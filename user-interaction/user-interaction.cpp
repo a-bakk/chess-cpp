@@ -5,7 +5,7 @@ invalid_coord::invalid_coord(const std::string& message) : message(message) {}
 const char* invalid_coord::what() const noexcept { return message.c_str(); }
 
 bool get_coords(move_coord &c) {
-    std::cout << "Move from: "; std::string input; std::cin >> input;
+    std::cout << " move from: "; std::string input; std::cin >> input;
     try {
         c.from_c = toupper(input[0]) - 'A';
         if (c.from_c < 0 || c.from_c > 7) throw invalid_coord("invalid column");
